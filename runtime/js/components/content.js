@@ -39,7 +39,7 @@ permissions and limitations under the License.
                         icon: 'image',
                         onclick: function () {
 
-                            self.setState({ isImageUploadOpen: true });
+                            self.setState({ isImageUploadOpen: !self.state.isImageUploadOpen });
                             self.render();
 
                         }
