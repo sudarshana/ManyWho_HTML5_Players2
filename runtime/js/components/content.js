@@ -40,7 +40,6 @@ permissions and limitations under the License.
                         onclick: function () {
 
                             self.setState({ isImageUploadOpen: !self.state.isImageUploadOpen });
-                            self.render();
 
                         }
 
