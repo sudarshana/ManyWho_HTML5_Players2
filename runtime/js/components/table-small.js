@@ -116,9 +116,23 @@ permissions and limitations under the License.
 
                                     var selectedProperty = item.properties.filter(function (property) {
 
-                                        return property.typeElementPropertyId == column.typeElementPropertyId
+                                        return property.typeElementPropertyId == column.typeElementPropertyId;
 
                                     })[0];
+
+                                    if (!manywho.utils.isNullOrWhitespace(column.typeElementPropertyToDisplayId)) {
+
+                                        if (selectedProperty != null && selectedProperty.objectData != null) {
+
+                                            selectedProperty = selectedProperty.objectData[0].properties.filter(function (childProperty) {
+
+                                                return childProperty.typeElementPropertyId == column.typeElementPropertyToDisplayId;
+
+                                            })[0];
+
+                                        }
+
+                                    }
 
                                     if (selectedProperty) {
 
@@ -155,8 +169,13 @@ permissions and limitations under the License.
 
             manywho.log.info('Rendering Table-Small');
 
+            var classNames = [
+                'list-group',
+                (this.props.model.isValid) ? '' : 'table-invalid'
+            ].join(' ');
+
             var items = this.renderRows(this.props.objectData || [], this.props.outcomes, this.props.displayColumns);
-            return React.DOM.div({ className: 'list-group' }, items);
+            return React.DOM.div({ className: classNames }, items);
 
         }
 

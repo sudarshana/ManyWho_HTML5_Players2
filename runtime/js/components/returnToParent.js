@@ -23,9 +23,9 @@ permissions and limitations under the License.
 
             if (!manywho.utils.isNullOrWhitespace(this.props.parentStateId)) {
 
-                log.info('Rendering Return To Parent');
+                manywho.log.info('Rendering Return To Parent');
 
-                return React.DOM.button({ className: 'btn btn-info return-to-parent', onClick: this.onClick}, manywho.settings.global('localization.returnToParent', this.props.flowKey));
+                return React.DOM.button({ className: 'btn btn-info navbar-btn return-to-parent', onClick: this.onClick}, manywho.settings.global('localization.returnToParent', this.props.flowKey));
 
             }
 

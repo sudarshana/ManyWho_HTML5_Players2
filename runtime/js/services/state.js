@@ -44,6 +44,31 @@ manywho.state = (function (manywho) {
 
     }
 
+    function isEmptyObjectData(model) {
+
+        if (model.objectDataRequest && model.objectData && model.objectData.length == 1) {
+
+            for (prop in model.objectData[0].properties) {
+
+                if (!manywho.utils.isNullOrWhitespace(model.objectData[0].properties[prop].contentValue)) {
+
+                    return false;
+
+                }
+
+            }
+
+        }
+        else if (model.objectData) {
+
+            return false;
+
+        }
+
+        return true;
+
+    }
+
     return {
 
         refreshComponents: function(models, flowKey) {
@@ -55,7 +80,7 @@ manywho.state = (function (manywho) {
                 var selectedObjectData = null;
 
                 // We need to do a little work on the object data as we only want the selected values in the state
-                if (models[id].objectData) {
+                if (models[id].objectData && !isEmptyObjectData(models[id])) {
 
                     selectedObjectData = models[id].objectData.filter(function (item) {
 
@@ -88,6 +113,8 @@ manywho.state = (function (manywho) {
 
                     if (position != null && position.coords != null) {
 
+                        var nowTime = moment();
+
                         location[flowKey] = {
                             latitude: manywho.utils.getNumber(position.coords.latitude),
                             longitude: manywho.utils.getNumber(position.coords.longitude),
@@ -95,7 +122,9 @@ manywho.state = (function (manywho) {
                             altitude: manywho.utils.getNumber(position.coords.altitude),
                             altitudeAccuracy: manywho.utils.getNumber(position.coords.altitudeAccuracy),
                             heading: manywho.utils.getNumber(position.coords.heading),
-                            speed: manywho.utils.getNumber(position.coords.speed)
+                            speed: manywho.utils.getNumber(position.coords.speed),
+                            time: nowTime.format("YYYY-MM-DDTHH:mm:ss.SSSZ")
+
                         }
 
                     }
@@ -121,6 +150,12 @@ manywho.state = (function (manywho) {
         setComponent: function(id, values, flowKey, push) {
 
             components[flowKey][id] = $.extend(components[flowKey][id], values);
+
+            if (values != null) {
+
+                components[flowKey][id].objectData = values.objectData;
+
+            }
 
             if (push) {
                 manywho.collaboration.push(id, values, flowKey);
@@ -223,17 +258,29 @@ manywho.state = (function (manywho) {
 
                 components[flowKey][componentId].error = error;
 
+                components[flowKey][componentId].error.id = componentId;
+
             }
-            else {
+            else if (typeof error == 'string') {
 
                 components[flowKey][componentId].error = {
-                    message: error
+                    message: error,
+                    id: componentId
                 }
+
+            } else if(!error) {
+
+                components[flowKey][componentId].error = null;
 
             }
 
-            components[flowKey][componentId].error.id = componentId;
+        },
 
+        remove: function(flowKey) {
+
+            components[flowKey] == null;
+            delete components[flowKey];
+            
         }
 
     }

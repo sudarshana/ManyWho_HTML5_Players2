@@ -46,6 +46,23 @@ permissions and limitations under the License.
 
     }
 
+    function parseValue(value, maxSize) {
+
+        if (value != null) {
+
+            var max = (Math.pow(10, maxSize)) - 1;
+            var min = (Math.pow(10, maxSize) * -1) + 1;
+            var parsedValue = parseFloat(value);
+
+            parsedValue = Math.min(parsedValue, max);
+            return Math.max(parsedValue, min);
+
+        }
+
+        return null;
+
+    }
+
     var input = React.createClass({
 
         componentDidMount: function () {
@@ -66,17 +83,17 @@ permissions and limitations under the License.
 
                 if (isEmptyDate(state.contentValue)) {
 
-                    stateDate = moment();
+                    manywho.state.setComponent(this.props.id, { contentValue: null }, this.props.flowKey, true);
 
                 }
                 else {
 
                     stateDate = moment(state.contentValue, ["MM/DD/YYYY hh:mm:ss A ZZ", moment.ISO_8601]);
-
+                    manywho.state.setComponent(this.props.id, { contentValue: stateDate.format() }, this.props.flowKey, true);
+                    $(datepickerElement).data("DateTimePicker").date(stateDate);
                 }
 
-                manywho.state.setComponent(this.props.id, { contentValue: stateDate.format() }, this.props.flowKey, true);
-                $(datepickerElement).data("DateTimePicker").date(stateDate);
+
 
             }
 
@@ -88,6 +105,14 @@ permissions and limitations under the License.
 
                 $(this.refs.datepicker.getDOMNode()).data('DateTimePicker').destroy();
 
+            }
+
+        },
+
+        getInitialState: function() {
+
+            return {
+                value: null
             }
 
         },
@@ -104,15 +129,32 @@ permissions and limitations under the License.
             else if (manywho.utils.isEqual(model.contentType, manywho.component.contentTypes.number, true)
                     && !manywho.utils.isNullOrWhitespace(e.target.value)) {
 
-                var max = (Math.pow(10, model.maxSize)) - 1
-                var min = (Math.pow(-10, model.maxSize)) + 1
-                var value = parseInt(e.target.value);
-
-                var value = Math.min(value, max);
-                value = Math.max(value, min);
+                var value = parseValue(e.target.value, model.maxSize);
 
                 manywho.state.setComponent(this.props.id, { contentValue: value }, this.props.flowKey, true);
-                this.forceUpdate();
+                this.setState({ value: e.target.value });
+
+            }
+            else if (manywho.utils.isEqual(model.contentType, manywho.component.contentTypes.datetime, true)) {
+
+                var formats = [moment.ISO_8601, 'MM/DD/YYYY hh:mm:ss A ZZ'];
+                if (model.attributes && model.attributes.dateTimeFormat) {
+                    formats.push(model.attributes.dateTimeFormat);
+                }
+
+                var date = moment(e.target.value, formats);
+                if (date.isValid()) {
+
+                    manywho.state.setComponent(this.props.id, { contentValue: date.format() }, this.props.flowKey, true);
+
+                }
+                else {
+
+                    manywho.state.setComponent(this.props.id, { contentValue: e.target.value }, this.props.flowKey, true);
+
+                }
+
+                this.setState({ value: e.target.value });
 
             }
             else {
@@ -120,6 +162,18 @@ permissions and limitations under the License.
                 manywho.state.setComponent(this.props.id, { contentValue: e.target.value }, this.props.flowKey, true);
 
             }
+
+            if (model.contentType.toUpperCase() == manywho.component.contentTypes.boolean) {
+
+                this.handleEvent();
+
+            }
+
+            this.forceUpdate();
+
+        },
+
+        handleEvent: function () {
 
             manywho.component.handleEvent(this, manywho.model.getComponent(this.props.id, this.props.flowKey), this.props.flowKey);
 
@@ -136,7 +190,7 @@ permissions and limitations under the License.
             var attributes = {
                 type: getInputType(model.contentType),
                 placeholder: model.hintValue,
-                value: state.contentValue,
+                value: state.contentValue || model.contentValue,
                 onChange: this.handleChange,
                 id: this.props.id,
                 maxLength: model.maxSize,
@@ -160,8 +214,8 @@ permissions and limitations under the License.
             }
 
             var containerClassNames = [
-                (model.isVisible) ? '' : 'hidden',
                 (isValid) ? '' : 'has-error',
+                (model.isVisible == false) ? 'hidden' : '',
                 (manywho.utils.isEqual(model.contentType, 'ContentDateTime', true)) ? 'datetime-container' : ''
             ]
             .concat(manywho.styling.getClasses(this.props.parentId, this.props.id, 'input', this.props.flowKey))
@@ -185,11 +239,15 @@ permissions and limitations under the License.
                                 model.label
                             ])
                         ),
-                        React.DOM.span({className: 'help-block'}, model.message),
+                        React.DOM.span({className: 'help-block'}, model.validationMessage),
                         React.DOM.span({ className: 'help-block' }, model.helpInfo)
                     ]);
 
             } else {
+
+                if (model.hasEvents) {
+                    attributes.onBlur = this.handleEvent;
+                }
 
                 attributes.className = 'form-control ';
 
@@ -197,13 +255,18 @@ permissions and limitations under the License.
 
                     attributes.className += 'datepicker';
                     attributes.ref = 'datepicker';
+                    attributes.value = this.state.value;
 
                 }
                 else if (manywho.utils.isEqual(model.contentType, manywho.component.contentTypes.number, true)) {
 
-                    attributes.style = { width: (15 * model.size) + "px !important" }
-                    attributes.max = (Math.pow(10, model.maxSize)) - 1
-                    attributes.min = (Math.pow(-10, model.maxSize)) + 1
+                    attributes.style = { width: (15 * model.size) + "px !important" };
+                    attributes.max = (Math.pow(10, model.maxSize)) - 1;
+                    attributes.min = (Math.pow(10, model.maxSize) * -1) + 1;
+                    attributes.value = (null != this.state.value && this.state.value)
+                                         || (null != state.contentValue && state.contentValue)
+                                         || (null != model.contentValue && state.contentValue)
+                                         || null;
 
                 }
 
@@ -214,7 +277,7 @@ permissions and limitations under the License.
                             (model.isRequired) ? React.DOM.span({ className: 'input-required' }, ' *') : null
                         ]),
                         React.DOM.input(attributes, null),
-                        React.DOM.span({ className: 'help-block' }, model.message),
+                        React.DOM.span({ className: 'help-block' }, model.validationMessage),
                         React.DOM.span({ className: 'help-block' }, model.helpInfo)
                     ]);
 

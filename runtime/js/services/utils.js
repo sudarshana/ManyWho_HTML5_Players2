@@ -34,11 +34,26 @@ manywho.utils = (function (manywho, $) {
         replaceBrowserUrl: function(response) {
 
             // Check to make sure the browser supports the switch of the url
-            if (history && history.replaceState && !manywho.utils.isEmbedded()) {
+            if (history && history.replaceState) {
+
+                var queryParameters = manywho.utils.parseQueryString(window.location.search.substring(1));
+
+                var newJoinUri = response.joinFlowUri;
+                var ignoreParameters = ['tenant-id', 'flow-id', 'flow-version-id', 'navigation-element-id', 'join', 'initialization', 'authorization'];
+
+                for (var queryParameter in queryParameters) {
+
+                    if (ignoreParameters.indexOf(queryParameter) == -1) {
+
+                        newJoinUri += '&' + queryParameter + '=' + queryParameters[queryParameter];
+
+                    }
+
+                }
 
                 try
                 {
-                    history.replaceState(response.stateToken, "Title", response.joinFlowUri);
+                    history.replaceState(response.stateToken, "Title", newJoinUri);
                 }
                 catch (ex)
                 {
@@ -207,12 +222,6 @@ manywho.utils = (function (manywho, $) {
 
         },
 
-        isModal: function (flowKey) {
-
-            return this.isEqual(this.extractElement(flowKey), 'modal', true);
-
-        },
-
         removeLoadingIndicator: function(id) {
 
             var element = document.getElementById(id);
@@ -234,22 +243,6 @@ manywho.utils = (function (manywho, $) {
         isSmallScreen: function (flowKey) {
 
             return document.getElementById(flowKey).clientWidth < 768;
-
-        },
-
-        isDrawTool: function (flowKey) {
-
-            return this.isEqual(manywho.model.getParentForModal(flowKey), 'draw_draw_draw_main', true);
-
-        },
-
-        extractOutputValue: function (outputs, outputName) {
-
-            return outputs.filter(function (output) {
-
-                return manywho.utils.isEqual(output.developerName, outputName, true);
-
-            });
 
         },
 
@@ -286,11 +279,60 @@ manywho.utils = (function (manywho, $) {
 
                 if (rootElement.children[i].id == flowKey) {
 
+                    React.unmountComponentAtNode(rootElement.children[i]);
                     rootElement.removeChild(rootElement.children[i]);
 
                 }
 
             }
+
+        },
+
+        getObjectDataProperty: function (properties, propertyName) {
+
+            return properties.filter(function (property) {
+
+                return manywho.utils.isEqual(property.developerName, propertyName, true);
+
+            })[0];
+
+
+        },
+
+        setObjectDataProperty: function (properties, propertyName, value) {
+
+            var property = properties.filter(function (property) {
+
+                return manywho.utils.isEqual(property.developerName, propertyName, true);
+
+            })[0];
+
+            if (property) property.contentValue = value;
+
+        },
+
+        isEmptyObjectData: function(model) {
+
+            if (model.objectDataRequest && model.objectData && model.objectData.length == 1) {
+
+                for (prop in model.objectData[0].properties) {
+
+                    if (!manywho.utils.isNullOrWhitespace(model.objectData[0].properties[prop].contentValue)) {
+
+                        return false;
+
+                    }
+
+                }
+
+            }
+            else if (model.objectData) {
+
+                return false;
+
+            }
+
+            return true;
 
         }
 

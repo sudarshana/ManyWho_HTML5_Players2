@@ -25,7 +25,17 @@ manywho.collaboration = (function (manywho) {
             data.id = socket.id;
             data.owner = socket.id;
 
-            socket.emit(kind, data);
+            if (socket.connected) {
+
+                socket.emit(kind, data);
+
+            }
+            else {
+
+                socket.on('connect', socket.emit.bind(socket, kind, data));
+
+            }
+
 
         }
 
@@ -91,7 +101,7 @@ manywho.collaboration = (function (manywho) {
         var element = manywho.utils.extractElement(flowKey);
 
         // Re-join the flow here so that we sync with the latest state from the manywho server
-        manywho.engine.join(tenantId, flowId, flowVersionId, element, stateId, manywho.state.getAuthenticationToken(flowKey)).then(function () {
+        manywho.engine.join(tenantId, flowId, flowVersionId, element, stateId, manywho.state.getAuthenticationToken(flowKey), manywho.settings.flow(null, flowKey)).then(function () {
 
             socket.emit('getValues', data);
 
@@ -132,9 +142,9 @@ manywho.collaboration = (function (manywho) {
 
         initialize: function (enable, flowKey) {
 
-            if (!socket && enable) {
+            var stateId = manywho.utils.extractStateId(flowKey);
 
-                var stateId = manywho.utils.extractStateId(flowKey);
+            if ((!socket || !rooms[stateId]) && enable) {
 
                 rooms[stateId] = {
                     isEnabled: true,
@@ -196,7 +206,18 @@ manywho.collaboration = (function (manywho) {
             if (socket && rooms[stateId].isEnabled) {
 
                 rooms[stateId].user = user;
-                socket.emit('join', { stateId: stateId, user: user });
+                emit(flowKey, 'join', { user: user });
+
+                if (!socket.connected) {
+
+                    socket.on('connect', this.getValues.bind(null, flowKey))
+
+                }
+                else {
+
+                    this.getValues(flowKey);
+
+                }
 
             }
 
@@ -228,13 +249,21 @@ manywho.collaboration = (function (manywho) {
 
         getValues: function (flowKey) {
 
-            emit(flowKey, 'getValues');
+            socket.emit('getValues', { stateId: manywho.utils.extractStateId(flowKey), id: socket.id });
 
         },
 
         syncFeed: function(flowKey) {
 
             emit(flowKey, 'syncFeed');
+
+        },
+
+        remove: function(flowKey) {
+
+            var stateId = manywho.utils.extractStateId(flowKey);
+            rooms[stateId] == null;
+            delete rooms[stateId];
 
         }
 

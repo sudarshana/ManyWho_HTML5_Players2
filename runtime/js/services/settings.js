@@ -34,7 +34,8 @@ manywho.settings = (function (manywho, $) {
             uri: ''
         },
         navigation: {
-            isFixed: true
+            isFixed: true,
+            isWizard: false
         },
         files: {
             downloadUriPropertyId: '6611067a-7c86-4696-8845-3cdc79c73289',
@@ -48,6 +49,10 @@ manywho.settings = (function (manywho, $) {
                 "searchreplace wordcount code insertdatetime",
                 "table directionality emoticons paste textcolor"
             ]
+        },
+        outcomes: null,
+        shortcuts: {
+            progressOnEnter: true
         },
         isFullWidth: false,
         collapsible: false,
@@ -145,7 +150,16 @@ manywho.settings = (function (manywho, $) {
 
         flow: function(path, flowKey) {
 
-            return manywho.utils.getValueByPath(flows[flowKey] || {}, path.toLowerCase());
+            if (manywho.utils.isNullOrWhitespace(path)) {
+
+                return flows[flowKey];
+
+            }
+            else {
+
+                return manywho.utils.getValueByPath(flows[flowKey] || {}, path.toLowerCase());
+
+            }
 
         },
 
@@ -182,6 +196,13 @@ manywho.settings = (function (manywho, $) {
                 }
 
             }
+
+        },
+
+        remove: function(flowKey) {
+
+            flows[flowKey] == null;
+            delete flows[flowKey];
 
         }
 

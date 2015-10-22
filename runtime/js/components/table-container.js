@@ -44,6 +44,7 @@ permissions and limitations under the License.
         var headerElements = [];
         var searchElement = null;
         var outcomesElement = null;
+        var mainElement = document.getElementById(flowKey);
 
         if (isSearchEnabled) {
 
@@ -68,7 +69,7 @@ permissions and limitations under the License.
 
         }
 
-        if (document.getElementById(flowKey).clientWidth < 768) {
+        if (mainElement && mainElement.clientWidth < 768) {
 
             headerElements = [outcomesElement, searchElement];
 
@@ -109,7 +110,7 @@ permissions and limitations under the License.
 
         if (footerElements.length > 0) {
 
-            return React.DOM.div({ className: 'table-footer' }, footerElements);
+            return React.DOM.div({ className: 'table-footer clearfix' }, footerElements);
 
         }
 
@@ -149,6 +150,8 @@ permissions and limitations under the License.
 
             if (request) {
 
+                this.clearSelection();
+
                 manywho.engine.objectDataRequest(this.props.id, request, this.props.flowKey, manywho.settings.global('paging.table'), state.search, null, null, state.page);
 
             }
@@ -164,30 +167,45 @@ permissions and limitations under the License.
 
             var selectedRows = this.state.selectedRows;
 
+            var model = manywho.model.getComponent(this.props.id, this.props.flowKey);
+
             if (selectedRows.indexOf(e.currentTarget.id) == -1) {
 
-                var model = manywho.model.getComponent(this.props.id, this.props.flowKey);
-                if (model.isMultiSelect) {
-
-                    selectedRows.push(e.currentTarget.id);
-
-                }
-                else {
-
-                    selectedRows = [e.currentTarget.id];
-
-                }
+                model.isMultiSelect ? selectedRows.push(e.currentTarget.id) : selectedRows = [e.currentTarget.id];
 
             }
             else {
 
-                selectedRows.pop(e.currentTarget.id);
+                selectedRows.splice(selectedRows.indexOf(e.currentTarget.id), 1);
 
             }
 
             this.setState({ selectedRows: selectedRows });
             manywho.state.setComponent(this.props.id, { objectData: manywho.component.getSelectedRows(model, selectedRows) }, this.props.flowKey, true);
 
+        },
+
+        selectAll: function (objectData, e) {
+
+            var selectedRows = [];
+
+            if (e.currentTarget.checked) {
+
+                objectData.forEach(function (item) {
+
+                    selectedRows.push(item.externalId);
+
+                });
+
+            }
+
+            this.setState({ selectedRows: selectedRows });
+
+        },
+
+        clearSelection: function () {
+            
+            this.setState({ selectedRows: [] });
         },
 
         onHeaderClick: function (e) {
@@ -232,8 +250,18 @@ permissions and limitations under the License.
             var model = manywho.model.getComponent(this.props.id, this.props.flowKey);
             manywho.state.setComponent(model.id, { objectData: manywho.component.getSelectedRows(model, [objectDataId]) }, this.props.flowKey, true);
 
+            var flowKey = this.props.flowKey;
             var outcome = manywho.model.getOutcome(outcomeId, this.props.flowKey);
-            manywho.engine.move(outcome, this.props.flowKey);
+            manywho.engine.move(outcome, this.props.flowKey)
+                .then(function() {
+
+                    if (outcome.isOut) {
+
+                        manywho.engine.flowOut(outcome, flowKey);
+
+                    }
+
+                });
 
         },
 
@@ -367,12 +395,10 @@ permissions and limitations under the License.
             var rowOutcomes = this.outcomes.filter(function (outcome) { return !outcome.isBulkAction });
             var headerOutcomes = this.outcomes.filter(function (outcome) { return outcome.isBulkAction });
 
-            if (state.error || !manywho.utils.isNullOrWhitespace(model.validationMessage)) {
-
-                var errorMessage = model.validationMessage || state.error.message;
+            if (state.error) {
 
                 content = React.DOM.div({ className: 'table-error' }, [
-                    React.DOM.p({ className: 'lead' }, errorMessage),
+                    React.DOM.p({ className: 'lead' }, state.error.message),
                     React.DOM.button({ className: 'btn btn-danger', onClick: this.search }, 'Retry')
                 ]);
 
@@ -395,12 +421,14 @@ permissions and limitations under the License.
                     onOutcome: this.onOutcome,
                     selectedRows: this.state.selectedRows,
                     onRowClicked: this.props.onRowClicked || this.onRowClicked,
+                    selectAll: this.selectAll.bind(this, objectData),
                     isSelectionEnabled: isSelectionEnabled,
                     flowKey: this.props.flowKey,
                     onHeaderClick: this.onHeaderClick,
                     lastSortedBy: this.state.lastSortedBy,
                     sortByOrder: this.state.sortByOrder,
-                    isFiles: manywho.utils.isEqual(model.componentType, 'files', true)
+                    isFiles: manywho.utils.isEqual(model.componentType, 'files', true),
+                    isValid: isValid
                 });
 
             }
@@ -419,19 +447,24 @@ permissions and limitations under the License.
 
             var classNames = ['table-container', 'clear-fix'];
 
-            if (typeof model.isValid !== 'undefined' && model.isValid == false)
-                classNames.push('has-error');
-
             if (isSmall)
                 classNames.push('table-container-small');
 
-            if (!model.isVisible)
+            if (model.isVisible == false)
                 classNames.push('hidden');
 
             classNames = classNames.concat(manywho.styling.getClasses(this.props.parentId, this.props.id, "table", this.props.flowKey));
 
+            var validationElement = null;
+            if (typeof model.isValid !== 'undefined' && model.isValid == false) {
+
+                validationElement = React.DOM.div({ className: 'has-error' }, React.DOM.span({ className: 'help-block' }, model.validationMessage));
+
+            }
+
             return React.DOM.div({ className: classNames.join(' ') }, [
                 (manywho.utils.isNullOrWhitespace(model.label)) ? null : React.DOM.label({}, model.label),
+                validationElement,
                 React.DOM.div({ className: this.state.isVisible ? '' : ' hidden' }, [
                     fileUpload,
                     renderHeader(headerOutcomes, this.props.flowKey, model.isSearchable, this.onSearchChanged, this.onSearchEnter, this.search),

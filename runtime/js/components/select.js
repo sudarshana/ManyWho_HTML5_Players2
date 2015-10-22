@@ -11,72 +11,9 @@ permissions and limitations under the License.
 
 (function (manywho) {
 
-    function renderOption (item) {
-
-        if (item.properties) {
-
-            var label = item.properties.filter(function (value) {
-
-                return manywho.utils.isEqual(value.typeElementPropertyId, this.column, true);
-
-            }, this)[0];
-
-            return React.DOM.option({ value: item.externalId }, label.contentValue);
-
-        }
-
-        return null;
-
-    }
-
-    function isSelectedObjectData(objectData) {
-
-        if (this && this.objectData && this.objectData.length > 0) {
-
-            if (this.objectData.filter(function(item) {
-
-                return manywho.utils.isEqual(objectData.externalId, item.externalId)
-
-            }).length > 0) {
-
-                return true;
-
-            }
-
-        }
-
-        return objectData.isSelected;
-
-    }
-
-    function isEmptyObjectData(model) {
-
-        if (model.objectDataRequest && model.objectData && model.objectData.length == 1) {
-
-            for (prop in model.objectData[0].properties) {
-
-                if (!manywho.utils.isNullOrWhitespace(model.objectData[0].properties[prop].contentValue)) {
-
-                    return false;
-
-                }
-
-            }
-
-        }
-        else if (model.objectData) {
-
-            return false;
-
-        }
-
-        return true;
-
-    }
-
     var select = React.createClass({
 
-        handleChange: function(e, args) {
+        onChange: function(value, selectedValues) {
 
             var model = manywho.model.getComponent(this.props.id, this.props.flowKey);
 
@@ -88,21 +25,14 @@ permissions and limitations under the License.
             });
 
             var selectedObjectData = null;
-            var selectedOptions = Array.prototype.slice.call(e.currentTarget.options).filter(function(option) {
 
-                return option.selected;
+            if (selectedValues) {
 
-            });
-
-            if (selectedOptions && selectedOptions.length > 0) {
+                var selectedIds = selectedValues.map(function(item) { return item.value });
 
                 selectedObjectData = model.objectData.filter(function (item) {
 
-                    return (selectedOptions.filter(function (option) {
-
-                        return manywho.utils.isEqual(item.externalId, option.value, true);
-
-                    }).length > 0);
+                    return selectedIds.indexOf(item.externalId) != -1;
 
                 })
                 .map(function (item) {
@@ -116,59 +46,38 @@ permissions and limitations under the License.
 
             manywho.state.setComponent(this.props.id, { objectData: selectedObjectData }, this.props.flowKey, true);
             manywho.component.handleEvent(this, model, this.props.flowKey);
-
         },
 
         render: function () {
 
             manywho.log.info('Rendering Select: ' + this.props.id);
 
-            var options = [];
-
             var model = manywho.model.getComponent(this.props.id, this.props.flowKey);
             var state = manywho.state.getComponent(this.props.id, this.props.flowKey);
-
-            var objectData = model.objectData;
             var columnTypeElementPropertyId = manywho.component.getDisplayColumns(model.columns)[0].typeElementPropertyId;
+            var options = null;
+            var value = null;
 
-            var attributes = {
-                onChange: this.handleChange,
-                containerClasses: 'select',
-                className: 'chosen-select'
-            };
+            if (!manywho.utils.isEmptyObjectData(model)) {
 
-            if (model.isRequired) {
-                attributes.required = 'required';
-            }
+                if (state && state.objectData) {
 
-            if (!model.isEnabled || !model.isEditable) {
-                attributes.disabled = 'disabled';
-            }
-
-            if (model.isMultiSelect) {
-                attributes.multiple = true;
-            }
-
-            attributes['data-placeholder'] = model.hintValue || 'Please select an option';
-            attributes.defaultValue = '';
-
-            if (!isEmptyObjectData(model)) {
-
-                options = objectData.map(renderOption, { column: columnTypeElementPropertyId, state: state });
-                options.unshift(React.DOM.option({ value: '' }, null));
-
-                var selectedItems = objectData.filter(isSelectedObjectData, state)
-                                                .map(function(objectData) {
-
-                                                    return objectData.externalId;
-
-                                                });
-
-                if (selectedItems.length > 0) {
-
-                    attributes.defaultValue = (model.isMultiSelect) ? selectedItems : selectedItems[0];
+                    value = state.objectData.map(function(item) { return item.externalId });
 
                 }
+                else {
+
+                    value = model.objectData.filter(function(item) { return item.isSelected })
+                                                    .map(function(item) { return item.externalId });
+
+                }
+
+                options = model.objectData.map(function(item) {
+
+                    var label = item.properties.filter(function (value) { return manywho.utils.isEqual(value.typeElementPropertyId, columnTypeElementPropertyId, true) })[0];
+                    return { value: item.externalId, label: label.contentValue };
+
+                });
 
             }
 
@@ -180,7 +89,7 @@ permissions and limitations under the License.
 
             }
 
-            if (!model.isVisible) {
+            if (model.isVisible == false) {
 
                 containerClassNames.push('hidden');
 
@@ -188,7 +97,7 @@ permissions and limitations under the License.
 
             containerClassNames = containerClassNames.concat(manywho.styling.getClasses(this.props.parentId, this.props.id, 'select', this.props.flowKey))
 
-            var iconClassNames = ['glyphicon', 'glyphicon-refresh', 'select-loading-icon spin'];
+            var iconClassNames = ['select-loading-icon'];
 
             if (!state.loading || state.error) {
 
@@ -201,9 +110,16 @@ permissions and limitations under the License.
                     model.label,
                     (model.isRequired) ? React.DOM.span({ className: 'input-required' }, ' *') : null
                 ]),
-                React.DOM.div({ className: 'input-wrapper' }, [
-                    React.createElement(Chosen, attributes, options),
-                    React.DOM.span({ className: iconClassNames.join(' ') }, null)
+                React.DOM.div({ className: 'select-wrapper' }, [
+                    React.createElement(Select, {
+                        multi: model.isMultiSelect,
+                        disabled: !model.isEnabled || !model.isEditable || state.loading,
+                        placeholder: model.hintValue || 'Please select an option',
+                        options: options,
+                        value: value,
+                        onChange: this.onChange
+                    }),
+                    React.DOM.div({ className: iconClassNames.join(' ') }, React.DOM.span({ className: 'glyphicon glyphicon-refresh spin'}, null))
                 ]),
                 React.DOM.span({ className: 'help-block' }, state.error && state.error.message),
                 React.DOM.span({ className: 'help-block' }, model.helpInfo)

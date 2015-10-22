@@ -47,7 +47,7 @@ permissions and limitations under the License.
                 var self = this;
 
                 var formData = new FormData();
-                Array.prototype.slice.call(this.refs.upload.getDOMNode().files).forEach(function (file) {
+                Array.prototype.slice.call(this.state.files).forEach(function (file) {
 
                     formData.append('FileData', file);
 
@@ -74,11 +74,14 @@ permissions and limitations under the License.
                     self.setState({
                         isUploadDisabled: false,
                         isFileSelected: false,
-                        isProgressVisible: false,
-                        progress: 0,
+                        isUploadComplete: true,
                         fileNames: [],
                         error: null
                     });
+
+                    setTimeout(function() {
+                        self.setState({ isUploadComplete: false, isProgressVisible: false, progress: 100, });
+                    }, 2000);
 
                     self.refs.upload.getDOMNode().value = '';
 
@@ -104,10 +107,25 @@ permissions and limitations under the License.
 
         },
 
-        onFileSelected: function (e) {
+        onDrop: function (files) {
+
+            this.setState({ files: files });
+            this.onFileSelected(files);
+
+            var model = !manywho.utils.isNullOrWhitespace(this.props.id) && manywho.model.getComponent(this.props.id, this.props.flowKey);
+            if (model && model.attributes && model.attributes.isAutoUpload) {
+
+                this.onUpload();
+
+            }
+
+        },
+
+        onFileSelected: function (files) {
 
             this.setState({
-                fileNames: Array.prototype.slice.call(e.currentTarget.files).map(function(file) { return file.name }),
+                fileNames: Array.prototype.slice.call(files).map(function(file) { return file.name }),
+                files: files,
                 isFileSelected: true
             });
 
@@ -119,6 +137,7 @@ permissions and limitations under the License.
                 isUploadDisabled: false,
                 isFileSelected: false,
                 isProgressVisible: false,
+                isUploadComplete: false,
                 fileNames: [],
                 error: null
             }
@@ -129,25 +148,27 @@ permissions and limitations under the License.
 
             manywho.log.info('Rendering File Upload ' + this.props.id);
 
-            var model = manywho.utils.isNullOrWhitespace(this.props.id) && manywho.model.getComponent(this.props.id, this.props.flowKey);
+            var model = !manywho.utils.isNullOrWhitespace(this.props.id) && manywho.model.getComponent(this.props.id, this.props.flowKey);
 
             var progress = (this.state.progress || 0) + '%';
             var isMultiple = this.props.multiple;
+            var isAutoUpload = false;
 
             if (model) {
 
                 isMultiple = model.multiple;
+                isAutoUpload = model.attributes && model.attributes.isAutoUpload;
 
             }
 
-            var uploadClasses = ['btn', 'btn-default', 'pull-left', 'btn-file-upload'];
-            var browseClasses = ['btn', 'btn-primary', 'btn-file'];
+            var uploadClasses = ['btn', 'btn-primary'];
             var inputClasses = ['form-control', 'filenames'];
+            var progressClasses = ['progress-bar'];
+            var componentClasses = ['file-upload'];
 
             if (this.props.smallInputs) {
 
                 uploadClasses.push('btn-sm');
-                browseClasses.push('btn-sm');
                 inputClasses.push('input-sm');
 
             }
@@ -158,27 +179,32 @@ permissions and limitations under the License.
 
             }
 
-            if (this.state.fileNames.length == 0) {
+            if (this.state.isUploadComplete) {
 
-                inputClasses.push('hidden');
+                progressClasses.push('progress-bar-success');
 
             }
 
-            return React.DOM.div(null, [
+            if (model.isVisible == false) {
+
+                componentClasses.push('hidden');
+
+            }
+
+            return React.DOM.div({ className: componentClasses.join(' ') }, [
                 React.DOM.div({ className: 'clearfix' }, [
-                    React.DOM.button({ className: uploadClasses.join(' '), disabled: this.state.isUploadDisabled || !this.state.isFileSelected, onClick: this.onUpload }, this.props.uploadCaption),
-                    React.DOM.div({ className: "input-group" },
-                        React.DOM.span({ className: "input-group-btn" },
-                            React.DOM.span({ className: browseClasses.join(' ')  },[
-                                this.props.browseCaption,
-                                React.DOM.input({ type: "file", multiple: isMultiple, onChange: this.onFileSelected, ref: 'upload' })
-                            ])
-                        ),
-                        React.DOM.input({ type: "text", className: inputClasses.join(' '), readOnly: true, value: this.state.fileNames.join(' ') })
-                    )
+                    React.createElement(Dropzone, { onDrop: this.onDrop, ref: 'upload', multiple: isMultiple, className: 'dropzone' }, [
+                        React.DOM.div(null, 'Drop files here, or click to select files')
+                    ]),
+                    React.DOM.div({ className: 'input-group ' + ((isAutoUpload) ? 'hidden' : '') }, [
+                        React.DOM.input({ type: "text", className: inputClasses.join(' '), readOnly: true, value: this.state.fileNames.join(' ') }),
+                        React.DOM.span({ className: 'input-group-btn'},
+                            React.DOM.button({ className: uploadClasses.join(' '), disabled: this.state.isUploadDisabled || !this.state.isFileSelected, onClick: this.onUpload }, this.props.uploadCaption)
+                        )
+                    ])
                 ]),
                 React.DOM.div({ className: 'progress files-progress ' + ((this.state.isProgressVisible) ? '' : 'hidden') },
-                    React.DOM.div({ className: 'progress-bar', style: { width: progress } })
+                    React.DOM.div({ className: progressClasses.join(' '), style: { width: progress } })
                 )
             ]);
 

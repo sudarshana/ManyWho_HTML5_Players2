@@ -16,6 +16,13 @@ permissions and limitations under the License.
         handleChange: function(e) {
 
             manywho.state.setComponent(this.props.id, { contentValue: e.target.value }, this.props.flowKey, true);
+
+            this.forceUpdate();
+
+        },
+
+        handleEvent: function () {
+
             manywho.component.handleEvent(this, manywho.model.getComponent(this.props.id, this.props.flowKey), this.props.flowKey);
 
         },
@@ -31,13 +38,17 @@ permissions and limitations under the License.
             var attributes = {
                 id: this.props.id,
                 placeholder: model.hintValue,
-                value: state.contentValue,
+                value: state.contentValue || '',
                 maxLength: model.maxSize,
                 onChange: this.handleChange,
                 cols: model.width,
                 rows: model.height,
                 className: 'form-control'
             };
+
+            if (model.hasEvents) {
+                attributes.onBlur = this.handleEvent;
+            }
 
             if (!model.isEnabled) {
                 attributes.disabled = 'disabled';
@@ -57,7 +68,7 @@ permissions and limitations under the License.
 
             var classNames = [
                 'form-group',
-                (model.isVisible) ? '' : 'hidden',
+                (model.isVisible == false) ? 'hidden' : '',
                 (isValid) ? '' : 'has-error'
             ]
             .concat(manywho.styling.getClasses(this.props.parentId, this.props.id, 'textarea', this.props.flowKey))
@@ -69,7 +80,7 @@ permissions and limitations under the License.
                     (model.isRequired) ? React.DOM.span({ className: 'input-required' }, ' *') : null
                 ]),
                 React.DOM.textarea(attributes, null),
-                React.DOM.span({ className: 'help-block' }, model.message)
+                React.DOM.span({ className: 'help-block' }, model.validationMessage)
             ]);
 
         }
