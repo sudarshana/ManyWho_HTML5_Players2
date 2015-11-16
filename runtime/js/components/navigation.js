@@ -110,15 +110,18 @@ permissions and limitations under the License.
 
         componentDidMount: function () {
 
-            window.addEventListener('scroll', this.handleScroll);
-            window.addEventListener('resize', this.handleResize);
+            this.handleScrollDebounced = manywho.utils.debounce(this.handleScroll, 100);
+            this.handleResizeDebounced = manywho.utils.debounce(this.handleResize, 200);
+
+            window.addEventListener('scroll', this.handleScrollDebounced);
+            window.addEventListener('resize', this.handleResizeDebounced);
 
         },
 
         componentWillUnmount: function () {
 
-            window.removeEventListener('scroll', this.handleScroll);
-            window.removeEventListener('resize', this.handleResize);
+            window.removeEventListener('scroll', this.handleScrollDebounced);
+            window.removeEventListener('resize', this.handleResizeDebounced);
 
         },
 
