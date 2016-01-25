@@ -40,6 +40,6 @@ permissions and limitations under the License.
 
     });
 
-    manywho.component.register("status", status);
+    manywho.component.register('status', status, ['mw-status']);
 
 }(manywho));

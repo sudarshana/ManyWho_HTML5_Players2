@@ -49,7 +49,7 @@ permissions and limitations under the License.
 
     });
 
-    manywho.component.register("vertical_flow", vertical);
+    manywho.component.register('vertical_flow', vertical, ['mw-vertical_flow']);
 
     manywho.styling.registerContainer("vertical_flow", function (item, container) {
 

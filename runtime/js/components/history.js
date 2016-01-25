@@ -80,6 +80,6 @@
 
     });
 
-    manywho.component.register("history", history);
+    manywho.component.register('history', history, ['mw-history']);
 
 }(manywho));

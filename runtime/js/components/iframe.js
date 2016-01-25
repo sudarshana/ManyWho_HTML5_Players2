@@ -32,6 +32,6 @@
 
     });
 
-    manywho.component.register("iframe", iframe);
+    manywho.component.register('iframe', iframe, ['mw-iframe']);
 
 }(manywho));

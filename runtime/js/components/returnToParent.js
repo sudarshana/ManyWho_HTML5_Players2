@@ -35,6 +35,6 @@ permissions and limitations under the License.
 
     });
 
-    manywho.component.register("returnToParent", returnToParent);
+    manywho.component.register('returnToParent', returnToParent, ['mw-returnToParent']);
 
 }(manywho));

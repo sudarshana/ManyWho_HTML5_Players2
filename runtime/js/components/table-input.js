@@ -167,6 +167,6 @@ permissions and limitations under the License.
 
     });
 
-    manywho.component.register("table-input", tableInput);
+    manywho.component.register('table-input', tableInput, ['table_input', 'mw-table-input', 'mw-table_input']);
 
 }(manywho));

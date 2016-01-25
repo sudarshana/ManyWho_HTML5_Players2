@@ -38,6 +38,6 @@
 
     });
 
-    manywho.component.register("image", image);
+    manywho.component.register('image', image, ['mw-image']);
 
 }(manywho));

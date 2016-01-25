@@ -191,6 +191,6 @@ permissions and limitations under the License.
 
     });
 
-    manywho.component.register("table-small", tableSmall);
+    manywho.component.register('table-small', tableSmall, ['mw-table-small']);
 
 }(manywho));

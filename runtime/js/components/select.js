@@ -177,6 +177,6 @@ permissions and limitations under the License.
 
     });
 
-    manywho.component.register('select', select);
+    manywho.component.register('select', select, ['mw-select']);
 
 })(manywho);

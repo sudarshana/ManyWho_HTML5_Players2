@@ -56,6 +56,6 @@
 
     });
 
-    manywho.component.register("list", list);
+    manywho.component.register('list', list, ['mw-list']);
 
 }(manywho));

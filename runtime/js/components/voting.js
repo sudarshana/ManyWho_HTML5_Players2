@@ -37,6 +37,6 @@ permissions and limitations under the License.
 
     });
 
-    manywho.component.register("voting", voting);
+    manywho.component.register('voting', voting, 'mw-voting');
 
 }(manywho));

@@ -253,6 +253,6 @@
 
     });
 
-    manywho.component.register('radio', radio);
+    manywho.component.register('radio', radio, ['radio-buttons', 'mw-radio', 'mw-radio-buttons']);
 
 })(manywho);

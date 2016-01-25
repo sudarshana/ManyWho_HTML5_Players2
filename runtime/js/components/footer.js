@@ -94,6 +94,6 @@ permissions and limitations under the License.
 
     });
 
-    manywho.component.register("footer", footer);
+    manywho.component.register('footer', footer, ['mw-footer']);
 
 }(manywho));

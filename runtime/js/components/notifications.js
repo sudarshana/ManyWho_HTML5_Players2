@@ -75,7 +75,7 @@ permissions and limitations under the License.
 
     });
 
-    manywho.component.register("notification", notification);
+    manywho.component.register('notification', notification, ['mw-notification']);
 
 
 }(manywho));

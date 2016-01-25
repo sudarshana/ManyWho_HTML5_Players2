@@ -254,6 +254,6 @@ permissions and limitations under the License.
 
     });
 
-    manywho.component.register("feed", feed);
+    manywho.component.register('feed', feed, ['mw-feed']);
 
 }(manywho));

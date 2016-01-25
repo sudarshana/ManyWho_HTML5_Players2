@@ -74,6 +74,6 @@ permissions and limitations under the License.
 
     });
 
-    manywho.component.register("modal", modal, ["modal-standalone"]);
+    manywho.component.register('modal', modal, ['modal-standalone', 'mw-modal', 'mw-modal-standalone']);
 
 }(manywho));

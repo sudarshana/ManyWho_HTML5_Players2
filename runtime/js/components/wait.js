@@ -76,6 +76,6 @@ permissions and limitations under the License.
 
     });
 
-    manywho.component.register("wait", wait);
+    manywho.component.register('wait', wait, ['mw-wait']);
 
 }(manywho));

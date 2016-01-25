@@ -65,6 +65,6 @@ permissions and limitations under the License.
 
     });
 
-    manywho.component.register("flip", flip);
+    manywho.component.register('flip', flip, ['mw-flip']);
 
 }(manywho));

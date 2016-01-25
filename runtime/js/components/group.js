@@ -136,7 +136,7 @@ permissions and limitations under the License.
 
     });
 
-    manywho.component.register("group", group);
+    manywho.component.register('group', group, ['mw-group']);
 
     manywho.styling.registerContainer("group", function (item, container) {
 

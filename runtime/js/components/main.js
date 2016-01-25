@@ -113,7 +113,7 @@ permissions and limitations under the License.
 
     });
 
-    manywho.component.register("main", main);
+    manywho.component.register('main', main, ['mw-main']);
 
 
 }(manywho));

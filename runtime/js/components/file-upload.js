@@ -227,6 +227,6 @@ permissions and limitations under the License.
 
     });
 
-    manywho.component.register("file-upload", fileUpload, ['file_upload']);
+    manywho.component.register('file-upload', fileUpload, ['file_upload', 'mw-file-upload']);
 
 }(manywho));

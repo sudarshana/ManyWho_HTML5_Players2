@@ -22,6 +22,6 @@ permissions and limitations under the License.
 
     });
 
-    manywho.component.register("hidden", hidden);
+    manywho.component.register('hidden', hidden, ['mw-hidden']);
 
 }(manywho));

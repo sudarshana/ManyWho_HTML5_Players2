@@ -27,7 +27,7 @@ permissions and limitations under the License.
             var node = React.findDOMNode(this.refs.content);
             node.innerHTML = html;
 
-            var imgs = node.querySelectorAll('img')
+            var imgs = node.querySelectorAll('img');
             if (imgs && imgs.length > 0) {
 
                 for (var i = 0; i < imgs.length; i++) {
@@ -69,6 +69,6 @@ permissions and limitations under the License.
 
     });
 
-    manywho.component.register("presentation", presentation);
+    manywho.component.register('presentation', presentation, ['mw-presentation']);
 
 }(manywho));

@@ -228,6 +228,6 @@ permissions and limitations under the License.
 
     });
 
-    manywho.component.register("debug", debugViewer);
+    manywho.component.register('debug', debugViewer, ['mw-debug']);
 
 }(manywho));

@@ -41,6 +41,6 @@ permissions and limitations under the License.
 
     });
 
-    manywho.component.register("pagination", pagination);
+    manywho.component.register('pagination', pagination, ['mw-pagination']);
 
 }(manywho));

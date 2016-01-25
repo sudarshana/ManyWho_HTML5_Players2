@@ -230,6 +230,6 @@ permissions and limitations under the License.
 
     });
 
-    manywho.component.register("navigation", navigation);
+    manywho.component.register('navigation', navigation, ['mw-navigation']);
 
 }(manywho));

@@ -333,6 +333,6 @@ permissions and limitations under the License.
 
     });
 
-    manywho.component.register('content', content);
+    manywho.component.register('content', content, ['mw-content']);
 
 }(manywho, window));

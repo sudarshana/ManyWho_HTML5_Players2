@@ -298,6 +298,6 @@ permissions and limitations under the License.
 
     });
 
-    manywho.component.register("table-large", tableLarge);
+    manywho.component.register('table-large', tableLarge, ['mw-table-large']);
 
 }(manywho));

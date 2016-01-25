@@ -337,6 +337,6 @@ permissions and limitations under the License.
 
     });
 
-    manywho.component.register('input', input, ['checkbox']);
+    manywho.component.register('input', input, ['checkbox', 'mw-input', 'mw-checkbox']);
 
 }(manywho));

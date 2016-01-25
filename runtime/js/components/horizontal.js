@@ -49,7 +49,7 @@ permissions and limitations under the License.
 
     });
 
-    manywho.component.register("horizontal_flow", horizontal);
+    manywho.component.register('horizontal_flow', horizontal, ['mw-horizontal_flow']);
 
     manywho.styling.registerContainer("horizontal_flow", function (item, container) {
 

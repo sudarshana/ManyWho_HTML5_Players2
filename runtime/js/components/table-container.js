@@ -616,6 +616,6 @@ permissions and limitations under the License.
 
     });
 
-    manywho.component.register("table", table, ['files']);
+    manywho.component.register('table', table, ['files', 'mw-table', 'mw-files']);
 
 }(manywho));
