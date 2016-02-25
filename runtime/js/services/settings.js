@@ -43,12 +43,14 @@ manywho.settings = (function (manywho, $) {
             downloadUriPropertyName: 'Download Uri'
         },
         richText: {
-            url: 'https://tinymce.cachefly.net/4.1/tinymce.min.js',
             fontSize: '14px',
-            plugins: [
-                "advlist autolink link lists link image charmap print hr anchor spellchecker",
-                "searchreplace visualblocks fullscreen wordcount code insertdatetime",
-                "media table directionality emoticons contextmenu paste textcolor"
+            toolbar: ['font', 'size', 'align', 'bold', 'italic', 'strike', 'underline', 'color', 'background', 'bullet', 'list', 'link', 'image'],
+            fonts: [
+                { label:'Sans Serif',  value:'sans-serif', selected:true },
+                { label:'Serif',       value:'serif' },
+                { label:'Impact',      value:'impact' },
+                { label:'Monospace',   value:'monospace' },
+                { label:'Trebuchet MS',   value:'trebuchet-ms' }
             ]
         },
         outcomes: null,

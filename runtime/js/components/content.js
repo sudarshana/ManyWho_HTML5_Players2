@@ -13,163 +13,59 @@ permissions and limitations under the License.
 
     var content = React.createClass({
 
-        changeInterval: null,
         skipSetContent: false,
-        editor: null,
-
-        initializeEditor: function() {
-
-            var self = this;
-            var model = manywho.model.getComponent(this.props.id, this.props.flowKey);
-
-            tinymce.init({
-                selector: 'textarea#' + this.props.id,
-                plugins: manywho.settings.global('richtext.plugins', this.props.flowKey, []),
-                width: model.width * 19, // Multiply the width by a "best guess" font-size as the manywho width is columns and tinymce width is pixels
-                height: model.height * 16, // Do the same for the height
-                readonly: !model.isEditable,
-                menubar: 'edit insert view format table tools',
-                toolbar: 'undo redo | styleselect | bold italic | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | link mwimage',
-
-                setup: function (editor) {
-
-                    self.editor = editor;
-
-                    if (!self.props.isDesignTime) {
-
-                        editor.addButton('mwimage', {
-                            title: 'Images',
-                            icon: 'image',
-                            onclick: function () {
-
-                                self.setState({ isImageUploadOpen: true });
-                                self.render();
-
-                            }
-
-                        });
-
-                        editor.on('change', self.handleChange);
-
-                        if (model.hasEvents) {
-                            editor.on('blur', self.handleEvent);
-                        }
-
-                    }
-
-                    editor.on('init', function () {
-
-                         this.getDoc().body.style.fontSize = manywho.settings.global('richtext.fontsize', self.props.flowKey, '13px');
-
-                     });
-
-                 }
-            });
-
-            this.setState({ isInitialized: true });
-
-        },
-
-        statics: {
-            isLoadingTinyMce: false,
-
-            loadTinyMce: function (callback) {
-
-                manywho.component.getByName('content').isLoadingTinyMce = true;
-
-                var script = document.createElement('script');
-                script.src = manywho.settings.global('richtext.url');
-
-                script.onload = function () {
-
-                    manywho.component.getByName('content').isLoadingTinyMce = false;
-                    callback.apply();
-
-                };
-
-                window.document.body.appendChild(script);
-
-            }
-
-        },
 
         getInitialState: function() {
 
             return {
-                isInitialized: false,
                 isImageUploadOpen: false
             }
 
         },
 
-        componentDidMount: function () {
+        getActiveItems: function() {
 
-            var self = this;
+            var activeItems = [];
+            var settings = manywho.settings.global('richText.toolbar');
 
-            if (!window.tinymce) {
+            ReactQuill.Toolbar.defaultItems.forEach(function(item) {
 
-                var component = manywho.component.getByName('content');
+                var group = { label: item.label, type: item.type };
 
-                if (!component.isLoadingTinyMce) {
+                item.items.forEach(function(subItem) {
 
-                    component.loadTinyMce(function () {
+                    if (manywho.utils.isEqual(subItem.type, 'font', true)) {
 
-                        self.initializeEditor();
+                        subItem.items = manywho.settings.global('richText.fonts');
 
-                    });
+                    }
 
-                }
-                else {
+                    if (settings.indexOf(subItem.type) > -1) {
 
-                    var loaderInterval = setInterval(function () {
+                        if (!group.items)
+                            group.items = [];
 
-                        if (window.tinymce) {
+                        group.items.push(subItem);
 
-                            self.initializeEditor();
-                            clearInterval(loaderInterval);
+                    }
 
-                        }
+                });
 
-                    }, 50);
+                if (group.items)
+                    activeItems.push(group);
 
-                }
+            });
 
-            }
-            else {
-
-                self.initializeEditor();
-
-            }
+            return activeItems;
 
         },
 
-        componentWillUnmount: function () {
+        handleChange: function (content, delta, source, editor) {
 
-            if (this.state.isInitialized && this.editor) {
+            if (content.length > 10)
+                return false;
 
-                tinymce.remove('textarea#' + this.props.id);
-
-            }
-
-            window.clearInterval(this.changeInterval);
-
-        },
-
-        handleChange: function (e) {
-
-            if (this.state.isInitialized && this.editor) {
-
-                var content = this.editor.getContent();
-                var state = manywho.state.getComponent(this.props.id, this.props.flowKey);
-
-                if (!manywho.utils.isEqual(content, state.contentValue, false)) {
-
-                    manywho.state.setComponent(this.props.id, { contentValue: content }, this.props.flowKey, true);
-                    this.skipSetContent = true;
-
-                }
-
-            }
+            manywho.state.setComponent(this.props.id, { contentValue: content }, this.props.flowKey, true);
 
         },
 
@@ -282,10 +178,17 @@ permissions and limitations under the License.
                 id: this.props.id,
                 placeholder: model.hintValue,
                 defaultValue: state.contentValue,
-                maxLength: model.maxSize,
-                cols: model.width,
-                rows: model.height
+                toolbar: this.getActiveItems(),
+                theme: 'snow',
+                onChange: this.handleChange,
+                style: {
+                    width: model.width * 50 + 'px',
+                    minHeight: 70 + (model.height * 40) + 'px'
+                }
             };
+
+            if (model.hasEvents)
+                attributes.onBlur = this.handleEvent;
 
             if (!model.isEnabled)
                 attributes.disabled = 'disabled';
@@ -298,7 +201,7 @@ permissions and limitations under the License.
 
             var classNames = [
                 'form-group',
-                (model.isVisible == false || !this.state.isInitialized) ? 'hidden' : '',
+                (model.isVisible === false) ? 'hidden' : '',
                 (isValid) ? '' : 'has-error'
             ]
             .concat(manywho.styling.getClasses(this.props.parentId, this.props.id, 'content', this.props.flowKey))
@@ -315,7 +218,7 @@ permissions and limitations under the License.
                     model.label,
                     (model.isRequired) ? React.DOM.span({ className: 'input-required' }, ' *') : null
                 ]),
-                React.DOM.textarea(attributes, null),
+                React.createElement(ReactQuill, attributes, null),
                 React.DOM.span({ className: 'help-block' }, model.validationMessage),
                 outcomes && outcomes.map(function (outcome) {
                     return React.createElement(manywho.component.getByName('outcome'), { id: outcome.id, flowKey: this.props.flowKey });
