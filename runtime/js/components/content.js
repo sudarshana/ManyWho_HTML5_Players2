@@ -178,12 +178,19 @@ permissions and limitations under the License.
                 id: this.props.id,
                 placeholder: model.hintValue,
                 defaultValue: state.contentValue,
+                modules: { 'image-tooltip': true },
                 toolbar: this.getActiveItems(),
                 theme: 'snow',
                 onChange: this.handleChange,
                 style: {
                     width: model.width * 50 + 'px',
                     minHeight: 70 + (model.height * 40) + 'px'
+                },
+                styles: {
+                    '.ql-editor': {
+                        'width': model.width * 50 + 'px !important',
+                        'min-height': (model.height * 40) + 'px !important'
+                    }
                 }
             };
 
