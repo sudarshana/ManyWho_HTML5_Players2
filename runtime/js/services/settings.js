@@ -200,7 +200,7 @@ manywho.settings = (function (manywho, $) {
 
             var lookUpKey = manywho.utils.getLookUpKey(flowKey);
 
-            flows[lookUpKey] == null;
+            flows[lookUpKey] = null;
             delete flows[lookUpKey];
 
         }

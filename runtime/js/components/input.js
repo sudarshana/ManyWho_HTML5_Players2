@@ -73,6 +73,32 @@ permissions and limitations under the License.
 
     }
 
+    function testExpression(value, type) {
+
+        var expression = '';
+
+        switch(type.toLowerCase()) {
+            case 'email':
+                expression = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+                break;
+            case 'usPhone':
+                expression = /^\([0-9]{3}\)[0-9]{3}-[0-9]{4}$/;
+                break;
+            case 'ukPhone':
+                expression = /^(((\+44\s?\d{4}|\(?0\d{4}\)?)\s?\d{3}\s?\d{3})|((\+44\s?\d{3}|\(?0\d{3}\)?)\s?\d{3}\s?\d{4})|((\+44\s?\d{2}|\(?0\d{2}\)?)\s?\d{4}\s?\d{4}))(\s?\#(\d{4}|\d{3}))?$/;
+                break;
+            case 'usZipCode':
+                expression = /^\d{5}(?:[-\s]\d{4})?$/;
+                break;
+            case 'ukPostCode':
+                expression = /^[A-Z]{1,2}[0-9]{1,2} ?[0-9][A-Z]{2}$/;
+                break;
+        }
+
+        return expression.test(value);
+
+    }
+
     var input = React.createClass({
 
         componentDidMount: function () {
@@ -264,6 +290,9 @@ permissions and limitations under the License.
 
             if (typeof model.isValid !== 'undefined' && model.isValid == false)
                 isValid = false;
+
+            if (manywho.utils.isEqual(getInputType(contentType), 'text', true) && model.attributes.type && !manywho.utils.isNullOrWhitespace(state.contentValue))
+                isValid = testExpression(state.contentValue, model.attributes.type);
 
             var containerClassNames = [
                 (isValid) ? '' : 'has-error',
