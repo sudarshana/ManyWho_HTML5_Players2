@@ -55,6 +55,9 @@ manywho.settings = (function (manywho, $) {
         shortcuts: {
             progressOnEnter: true
         },
+        search: {
+            matchPosition: 'any'
+        },
         isFullWidth: false,
         collapsible: false,
         history: false,

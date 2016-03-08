@@ -116,6 +116,9 @@ permissions and limitations under the License.
 
                 }
 
+                if (manywho.settings.global('search.matchPosition', this.props.flowKey))
+                    selectAttributes.matchPos = manywho.settings.global('search.matchPosition', this.props.flowKey);
+
                 selectAttributes.options = options;
 
                 selectAttributes.value = value;
