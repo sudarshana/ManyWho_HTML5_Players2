@@ -481,6 +481,14 @@ permissions and limitations under the License.
                 );
 
             }
+            else if (manywho.settings.global('lazyLoading', this.props.flowKey) && (!model.objectData || model.objectData.length === 0)) {
+
+                content = React.DOM.div({ className: 'table-error' },
+                    React.DOM.p({ className: 'lead' }, 'Click the button below to load data into this table'),
+                    React.DOM.button({ className: 'btn btn-primary', onClick: this.search }, 'Load')
+                );
+
+            }
             else {
 
                 var contentAttributes = {

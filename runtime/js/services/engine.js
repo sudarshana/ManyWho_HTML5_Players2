@@ -17,7 +17,7 @@ manywho.engine = (function (manywho) {
 
     function processObjectDataRequests(components, flowKey) {
 
-        if (components) {
+        if (components && !manywho.settings.global('lazyLoading', flowKey)) {
 
             var requestComponents = manywho.utils.convertToArray(components).filter(function (component) {
 

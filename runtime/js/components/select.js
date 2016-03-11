@@ -133,9 +133,22 @@ permissions and limitations under the License.
 
                 }
 
-                refreshButton = React.DOM.button({ className: 'btn btn-default refresh-button', onClick: this.refresh, disabled: state.loading },
-                    React.DOM.span({ className: iconClasses.join(' ') }, null)
-                );
+                if (model.objectData)
+                    var notSelected = model.objectData.filter(function(item) {
+                        return !item.isSelected;
+                    });
+
+                if (manywho.settings.global('lazyLoading', this.props.flowKey) && (!notSelected || notSelected.length === 0)) {
+
+                    refreshButton = React.DOM.button({ className: 'btn btn-primary', onClick: this.refresh, disabled: state.loading },
+                        React.DOM.span({}, 'Load')
+                    );
+
+                }
+                else
+                    refreshButton = React.DOM.button({ className: 'btn btn-default refresh-button', onClick: this.refresh, disabled: state.loading },
+                        React.DOM.span({ className: iconClasses.join(' ') }, null)
+                    );
 
             }
 
